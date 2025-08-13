@@ -18,19 +18,32 @@ import CampaignAdd from './pages/campaign/add.jsx';
 import CampaignManage from './pages/campaign/manage.jsx';
 import PurchaseOrderAdd from './pages/purchase-order/add.jsx';
 import PurchaseOrderManage from './pages/purchase-order/manage.jsx';
-import ReportAdd from './pages/report/add.jsx';
-import ReportManage from './pages/report/manage.jsx';
+
 import SettingAdd from './pages/setting/add.jsx';
 import SettingManage from './pages/setting/manage.jsx';
 import SettingProfile from './pages/setting/profile.jsx';
 import SettingPreferences from './pages/setting/preferences.jsx';
 import ExpenseAdd from './pages/expense/add.jsx';
-import ExpenseManage from './pages/expense/manage.jsx';
+
 import TasksAdd from './pages/tasks/add.jsx';
-import TasksManage from './pages/tasks/manage.jsx';
+import TasksManage from './pages/tasks/Report.jsx';
 import ViewCompany from './pages/company/view.jsx';
 import ViewClient from './pages/clients/view.jsx';
 import SignIn from './pages/auth/signin.jsx';
+import OrderManage from './pages/campaign/OrderManage.jsx';
+import CompanyOutstanding from './pages/report/CompanyOutstanding.jsx';
+import MediaCampaignTracker from './pages/report/MediaCampaignTracker.jsx';
+import MediaROITracker from './pages/report/MediaROITracker.jsx';
+import MediaExpiryTracker from './pages/report/MediaExpiryTracker.jsx';
+import MediaTracker from './pages/report/MediaTracker.jsx';
+import AppConfig from './pages/setting/AppConfig.jsx';
+import AddLead from './pages/leads/AddLead.jsx';
+import LeadList from './pages/leads/list.jsx';
+import LeadDetails from './pages/leads/detail.jsx';
+import LeadFollowUps from './pages/leads/follow-ups.jsx';
+import LeadReports from './pages/leads/reports.jsx';
+import Report from './pages/tasks/Report.jsx';
+
 
 function ThemeToggle() {
  
@@ -64,18 +77,28 @@ function App() {
                 <Route path="/media/manage" element={<MediaManage />} />
                 <Route path="/campaign/add" element={<CampaignAdd />} />
                 <Route path="/campaign/manage" element={<CampaignManage />} />
+                <Route path="/campaign/order" element={<OrderManage/>} />
                 <Route path="/purchase-order/add" element={<PurchaseOrderAdd />} />
                 <Route path="/purchase-order/manage" element={<PurchaseOrderManage />} />
-                <Route path="/report/add" element={<ReportAdd />} />
-                <Route path="/report/manage" element={<ReportManage />} />
-                <Route path="/setting/add" element={<SettingAdd />} />
-                <Route path="/setting/manage" element={<SettingManage />} />
-                <Route path="/setting/profile" element={<SettingProfile />} />
-                <Route path="/setting/preferences" element={<SettingPreferences />} />
+               
+                <Route path="/report/media-tracker" element={<MediaTracker />} />
+                <Route path="/report/media-expiry-tracker" element={<MediaExpiryTracker/>} />
+                <Route path="/report/media-roi-tracker" element={<MediaROITracker />} />
+                <Route path="/report/media-campaign-tracker" element={<MediaCampaignTracker />} />
+                <Route path="/report/company-outstanding" element={<CompanyOutstanding />} />
+               
+                <Route path="/setting/app-Configuration" element={<AppConfig />} />
+               
                 <Route path="/expense/add" element={<ExpenseAdd />} />
-                <Route path="/expense/manage" element={<ExpenseManage />} />
+                
                 <Route path="/tasks/add" element={<TasksAdd />} />
-                <Route path="/tasks/manage" element={<TasksManage />} />
+                <Route path="/tasks/report" element={<Report />} />
+                {/* Lead Management routes */}
+                <Route path="/leads/add" element={<AddLead />} />
+                <Route path="/leads/list" element={<LeadList />} />
+                <Route path="/leads/details/:id" element={<LeadDetails />} />
+                <Route path="/leads/follow-ups" element={<LeadFollowUps />} />
+                <Route path="/leads/reports" element={<LeadReports />} />
               </Routes>
             </Layout>
           } />

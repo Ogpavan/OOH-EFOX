@@ -4,7 +4,7 @@ import { themes } from './themes';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [themeName, setThemeName] = useState('forest');
+  const [themeName, setThemeName] = useState('forest'); // Default theme
   const theme = themes[themeName];
 
   const setTheme = (name) => {

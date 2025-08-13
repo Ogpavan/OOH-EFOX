@@ -276,7 +276,7 @@
 /* Example: e:\ETPL04\WORKSPACE\OOHFrontend\OOHfrontend\src\index.css */
 body {
   background: var(--theme-bodyBg);
-  color: var(--theme-sidebarText);
+  /* color: var(--theme-sidebarText); */
   font-family: var(--theme-fontFamily);
 }
 
@@ -286,3 +286,25 @@ body {
   color: var(--theme-activeText);
   font-family: var(--theme-fontFamily);
 }
+
+
+/* // Add this CSS to your global styles or sidebar CSS module: */
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #c2c5c4 transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  background: transparent; /* Hide track */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #0E4B38;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #167a5c;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Hide track */
+  border-radius: 8px;}

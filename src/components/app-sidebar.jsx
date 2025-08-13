@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import {
   MdBusiness, MdPeople, MdGroupAdd, MdGroups, MdPermMedia,
   MdEmail, MdReceipt, MdStorage, MdSettings, MdAttachMoney, MdTask,
+  MdContactPhone,
 } from "react-icons/md";
 import { ChevronRight } from "lucide-react";
 import {
@@ -36,29 +37,43 @@ const navItems = [
       { name: "Manage Media", to: "/media/manage" },
   ]},
   { name: "Campaign", icon: MdEmail, children: [
-      { name: "Add Campaign", to: "/campaign/add" },
-      { name: "Manage Campaign", to: "/campaign/manage" },
+      { name: "Create Proposal", to: "/campaign/add" },
+      { name: "Manage Proposal", to: "/campaign/manage" },
+      { name: "Manage Order", to: "/campaign/order" },
   ]},
   { name: "Purchase Order", icon: MdReceipt, children: [
       { name: "Add PO", to: "/purchase-order/add" },
       { name: "Manage PO", to: "/purchase-order/manage" },
   ]},
-  { name: "Report", icon: MdStorage, children: [
-      { name: "Add Report", to: "/report/add" },
-      { name: "Manage Report", to: "/report/manage" },
-  ]},
+  {
+  name: "Report", icon: MdStorage, children: [
+    { name: "Media Tracker", to: "/report/media-tracker" },
+    { name: "Media Expiry Tracker", to: "/report/media-expiry-tracker" },
+    { name: "Media ROI Tracker", to: "/report/media-roi-tracker" },
+    { name: "Media Campaign Tracker", to: "/report/media-campaign-tracker" },
+    { name: "Company Outstanding", to: "/report/company-outstanding" },
+  ]
+},
   { name: "Setting", icon: MdSettings, children: [
-      { name: "Profile", to: "/setting/profile" },
-      { name: "Preferences", to: "/setting/preferences" },
+      { name: "App Configuration", to: "/setting/app-Configuration" },
+     
   ]},
   { name: "Expense", icon: MdAttachMoney, children: [
-      { name: "Add Expense", to: "/expense/add" },
-      { name: "Manage Expense", to: "/expense/manage" },
+      { name: "Manage Expense", to: "/expense/add" },
+    
   ]},
   { name: "Task  ", icon: MdTask, children: [
-      { name: "Add Task", to: "/tasks/add" },
-      { name: "Manage Tasks", to: "/tasks/manage" },
+      { name: "Manage Task", to: "/tasks/add" },
+      { name: "Task Report", to: "/tasks/report" },
   ]},
+  {
+    name: "Lead Management", icon: MdContactPhone, children: [
+      { name: "Add Lead", to: "/leads/add" },
+      { name: "Lead List", to: "/leads/list" },
+      { name: "Follow-Ups", to: "/leads/follow-ups" },
+      { name: "Reports & Analytics", to: "/leads/reports" },
+    ]
+  },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }) {
@@ -68,10 +83,18 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const location = useLocation();
   const navigate = useNavigate();
   const parentBtnRefs = useRef({});
-  const { theme } = useTheme(); // <-- get theme
+  const { theme } = useTheme();
 
+  // Hide all open menus except the current one
   const toggleMenu = (name) => {
-    setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));
+    setOpenMenus((prev) => {
+      const newState = {};
+      Object.keys(prev).forEach((key) => {
+        newState[key] = false;
+      });
+      newState[name] = !prev[name];
+      return newState;
+    });
   };
 
   useEffect(() => {
@@ -130,7 +153,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </div>
 
       {/* MENU */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 relative">
+      <div
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-2 relative custom-scrollbar"
+        style={{
+          
+        }}
+      >
         {navItems.map((item) => {
           const Icon = item.icon;
           const activeParent = item.children.some((c) =>
@@ -161,6 +189,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 style={{
                   background: activeParent ? theme.activeBg : theme.sidebarBg,
                   color: activeParent ? theme.activeText : theme.sidebarText,
+                  border: item.children.some((child) => location.pathname === child.to)
+                    ? "2px solid #fff"
+                    : "2px solid transparent",
                 }}
               >
                 <Icon size={24} className="transition-all duration-200 shrink-0" />
@@ -176,12 +207,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     />
                   </>
                 )}
-                {activeParent && (
-                  <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded"
-                    style={{ background: theme.activeText }}
-                  ></div>
-                )}
+                {/* Remove previous activeParent indicator */}
               </button>
 
               {/* Children: popup menu */}
@@ -191,10 +217,12 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     className="sidebar-popup-menu rounded-md shadow-2xl py-2 px-2 min-w-[160px] flex flex-col gap-1 page-fade-in"
                     style={{
                       position: "fixed",
-                      top: menuPos.top,
+                      top: Math.min(menuPos.top, window.innerHeight - (item.children.length * 44) - 24), // 44px per item + some padding
                       left: menuPos.left,
                       zIndex: 9999,
                       background: theme.popupBg,
+                      maxHeight: "calc(100vh - 32px)",
+                      overflowY: "auto",
                     }}
                   >
                     {item.children.map((child) => (
@@ -231,15 +259,16 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                         to={child.to}
                         className={`group flex items-center px-3 py-2.5 text-sm rounded transition-all duration-200 ease-out`}
                         style={{
-                          color: activeChild ? theme.activeText : theme.childText,
-                          background: activeChild ? theme.activeBg : theme.childBg,
+                          color: activeChild ? "#fff" : theme.childText, // White text if active
+                          background: theme.childBg, // No bg change
                           fontWeight: activeChild ? "500" : "400",
+                          border: activeChild ? "2px solid #fff" : "2px solid transparent", // White border if active
                         }}
                       >
                         <div
                           className="w-2 h-2 rounded mr-3 transition-all duration-200"
                           style={{
-                            background: activeChild ? theme.activeText : theme.childDot,
+                            background: activeChild ? "#fff" : theme.childDot,
                           }}
                         ></div>
                         <span className="tracking-wide">{child.name}</span>
@@ -267,3 +296,4 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     </aside>
   );
 }
+

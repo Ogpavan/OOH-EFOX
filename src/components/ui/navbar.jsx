@@ -1,5 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MdMenu } from "react-icons/md";
+import { LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,6 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Navbar({ onToggleSidebar }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Add any logout logic here (clear tokens, etc.)
+    navigate('/');
+  };
+
   return (
     <div className="w-full h-16 flex items-center justify-between px-6 bg-white border-b  ">
       {/* Left: Logo and optional sidebar toggle */}
@@ -45,7 +54,13 @@ export function Navbar({ onToggleSidebar }) {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-red-600 focus:text-red-600 cursor-pointer"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
