@@ -1,28 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
-import { Phone, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import axios from "axios";
+import { showCustomToast } from "@/customcomponent/CustomToast";
 
 export default function SignIn() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    phone: "",
+    username: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.phone) {
-      newErrors.phone = "Phone number is required";
-    } else if (formData.phone.length !== 10) {
-      newErrors.phone = "Phone number must be 10 digits";
+    if (!formData.username) {
+      newErrors.username = "Username or Email is required";
     }
 
     if (!formData.password) {
@@ -34,10 +35,19 @@ export default function SignIn() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  useEffect(() => {
+    const companyID = localStorage.getItem("CompanyID");
+    const loginId = localStorage.getItem("loginId");
+    const roleID = localStorage.getItem("RoleID");
+    if (companyID && loginId && roleID) {
+      navigate("/company/add");
+    } else {
+      localStorage.clear();
+    }
+  }, [navigate]);
 
-  const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "");
-    setFormData({ ...formData, phone: value });
+  const handleUsernameChange = (e) => {
+    setFormData({ ...formData, username: e.target.value });
   };
 
   const handlePasswordChange = (e) => {
@@ -50,12 +60,40 @@ export default function SignIn() {
 
     if (validateForm()) {
       setLoading(true);
-      // Simulate loading
-      setTimeout(() => {
-        console.log("Sign in:", formData);
-        navigate("/company/add");
+
+      // API call
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/users/login`,
+          {
+            Username: formData.username,
+            Password: formData.password,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+
+        if (response.data.success) {
+         showCustomToast({ type: "success", message: "Login Success" });
+          // Store response data in localStorage
+          localStorage.setItem("CompanyID", response.data.CompanyID);
+          localStorage.setItem("loginId", response.data.loginId);
+          localStorage.setItem("RoleID", response.data.RoleID);
+
+          navigate("/company/add");
+        } else {
+          showCustomToast({ type: "error", message: "Invalid credentials" });
+          // setErrors({ password: "Invalid credentials" });
+        }
+
+      } catch (error) {
+         showCustomToast({ type: "error", message: "Invalid credentials" });
+        // setErrors({ password: "Login failed. Please try again." });
+      } finally {
         setLoading(false);
-      }, 1500);
+      }
     }
   };
 
@@ -103,35 +141,32 @@ export default function SignIn() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Phone Number Field */}
+              {/* Username/Email Field */}
               <div className="space-y-2">
                 <Label
-                  htmlFor="phone"
+                  htmlFor="username"
                   className="text-xs font-semibold text-slate-700 flex items-center gap-1"
                 >
-                  <Phone className="w-3 h-3 text-blue-600" />
-                  Phone Number
+                  Username / Email
                 </Label>
                 <div className="relative">
                   <Input
-                    id="phone"
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder="Enter your phone number"
-                    value={formData.phone}
-                    onChange={handlePhoneChange}
-                    className={`h-10 pl-3 pr-3 text-sm bg-slate-50/50 border-2 ${
-                      submitted && errors.phone
-                        ? "border-red-400 focus:border-red-500"
-                        : "border-slate-200 focus:border-blue-500 hover:border-slate-300"
-                    } rounded-sm  transition-all duration-300 focus:bg-white`}
-                    maxLength={10}
+                    id="username"
+                    type="text"
+                    placeholder="Enter your username or email"
+                    value={formData.username}
+                    onChange={handleUsernameChange}
+                    className={`h-10 pl-3 pr-3 text-sm bg-slate-50/50 border-2 ${submitted && errors.username
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-slate-200 focus:border-blue-500 hover:border-slate-300"
+                      } rounded-sm transition-all duration-300 focus:bg-white`}
+                    maxLength={50}
                   />
                 </div>
-                {submitted && errors.phone && (
+                {submitted && errors.username && (
                   <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                    <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                    {errors.phone}
+                    <span className="w-2 h-2 bg-red-500 rounded-full inline-block"></span>
+                    {errors.username}
                   </p>
                 )}
               </div>
@@ -152,18 +187,17 @@ export default function SignIn() {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handlePasswordChange}
-                    className={`h-10 pl-3 pr-10 text-sm bg-slate-50/50 border-2 ${
-                      submitted && errors.password
-                        ? "border-red-400 focus:border-red-500"
-                        : "border-slate-200 focus:border-blue-500 hover:border-slate-300"
-                    } rounded-sm  transition-all duration-300 focus:bg-white`}
+                    className={`h-10 pl-3 pr-10 text-sm bg-slate-50/50 border-2 ${submitted && errors.password
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-slate-200 focus:border-blue-500 hover:border-slate-300"
+                      } rounded-sm transition-all duration-300 focus:bg-white`}
                     maxLength={25}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-1 top-1 h-8 w-8 rounded-sm  hover:bg-slate-100 transition-colors"
+                    className="absolute right-1 top-1 h-8 w-8 rounded-sm hover:bg-slate-100 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -175,7 +209,7 @@ export default function SignIn() {
                 </div>
                 {submitted && errors.password && (
                   <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
-                    <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                    <span className="w-2 h-2 bg-red-500 rounded-full inline-block"></span>
                     {errors.password}
                   </p>
                 )}
@@ -196,7 +230,7 @@ export default function SignIn() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-10 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white font-semibold  transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed rounded-sm disabled:transform-none"
+                className="w-full h-10 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white font-semibold transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed rounded-sm disabled:transform-none"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">

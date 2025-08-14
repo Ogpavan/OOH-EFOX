@@ -43,6 +43,7 @@ import LeadDetails from './pages/leads/detail.jsx';
 import LeadFollowUps from './pages/leads/follow-ups.jsx';
 import LeadReports from './pages/leads/reports.jsx';
 import Report from './pages/tasks/Report.jsx';
+import { Toaster } from "sonner";
 
 
 function ThemeToggle() {
@@ -103,6 +104,7 @@ function App() {
             </Layout>
           } />
         </Routes>
+        <Toaster />
       </Router>
     </ThemeProvider>
   );

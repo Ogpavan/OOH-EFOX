@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Formik, Form, FastField, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { showCustomToast } from "@/customcomponent/CustomToast";
+import { getStateList, getCityListByStateId } from "@/services/apiService";
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -33,6 +35,41 @@ const validationSchema = Yup.object({
 });
 
 export default function AddCompany() {
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedStateId, setSelectedStateId] = useState("");
+
+  useEffect(() => {
+    async function fetchStates() {
+      try {
+        const data = await getStateList();
+        setStates(data);
+        // Debug: log type and value of states
+        console.log("Type of states:", typeof data, "Is Array:", Array.isArray(data), data);
+      } catch (error) {
+        setStates([]);
+      }
+    }
+    fetchStates();
+  }, []);
+
+  useEffect(() => {
+    async function fetchCities() {
+      if (selectedStateId) {
+        try {
+          const data = await getCityListByStateId(selectedStateId);
+          console.log("Cities Data:", data);
+          setCities(data);
+        } catch (error) {
+          setCities([]);
+        }
+      } else {
+        setCities([]);
+      }
+    }
+    fetchCities();
+  }, [selectedStateId]);
+
   return (
     <div className="min-h-screen p-8 page-fade-in">
       <div className="flex items-center justify-between mb-6">
@@ -72,11 +109,13 @@ export default function AddCompany() {
         validateOnChange
         validateOnBlur
         onSubmit={(values) => {
+          showCustomToast({ type: "success", message: "Company Added Successfully" });
           // handle submit
+
           console.log(values);
         }}
       >
-        {({ errors, touched }) => (
+        {({ errors, touched, setFieldValue, values }) => (
           <Form className="space-y-6">
             {/* Company Information */}
             <section className="bg-white rounded-lg shadow-sm p-6">
@@ -161,18 +200,27 @@ export default function AddCompany() {
                     {({ field, form }) => (
                       <Select
                         value={field.value}
-                        onValueChange={(value) =>
-                          form.setFieldValue("state", value)
-                        }
+                        onValueChange={(value) => {
+                          form.setFieldValue("state", value);
+                          setSelectedStateId(value);
+                          form.setFieldValue("city", ""); // Reset city when state changes
+                        }}
                       >
                         <SelectTrigger className="w-full border rounded px-2 py-2">
                           <SelectValue placeholder="Select State" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="UP">Uttar Pradesh</SelectItem>
-                          <SelectItem value="DL">Delhi</SelectItem>
-                          <SelectItem value="MH">Maharashtra</SelectItem>
-                          {/* Add more states as needed */}
+                          {states.length > 0 ? (
+                            states.map((state) => (
+                              <SelectItem key={state.StateId} value={state.StateId.toString()}>
+                                {state.StateName}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="loading" disabled>
+                              Loading states...
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     )}
@@ -183,23 +231,28 @@ export default function AddCompany() {
                     className="text-red-500 text-xs mt-1"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium mb-1">City</label>
                   <FastField name="city">
                     {({ field, form }) => (
                       <Select
                         value={field.value}
-                        onValueChange={(value) => form.setFieldValue("city", value)}
+                        onValueChange={(value) => {
+                          form.setFieldValue("city", value);
+                          console.log("Selected StateId:", selectedStateId);
+                          console.log("Selected CityId:", value);
+                        }}
+                        disabled={!selectedStateId}
                       >
                         <SelectTrigger className="w-full border rounded px-2 py-2">
                           <SelectValue placeholder="Select City" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Lucknow">Lucknow</SelectItem>
-                          <SelectItem value="Delhi">Delhi</SelectItem>
-                          <SelectItem value="Mumbai">Mumbai</SelectItem>
-                          {/* Add more cities as needed */}
+                          {cities.map((city) => (
+                            <SelectItem key={city.CityId} value={city.CityId.toString()}>
+                              {city.CityName}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
