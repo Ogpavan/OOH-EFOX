@@ -24,6 +24,7 @@ import {
 import { useTheme } from "@/lib/theme-context.jsx";
 import { fetchNavItems } from "@/services/SideBardata.js"; // <-- Import dynamic fetch function
 
+
 export default function Sidebar({ collapsed, setCollapsed }) {
   const [navItems, setNavItems] = useState([]);
   const [openMenus, setOpenMenus] = useState({});
@@ -38,7 +39,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     let mounted = true;
     async function loadSidebar() {
       // Replace with your actual companyId and roleId
-      const items = await fetchNavItems("1032", "27");
+      const items = await fetchNavItems(localStorage.getItem("CompanyID"), localStorage.getItem("RoleID"));
+      console.log(items);
       if (mounted) setNavItems(items);
     }
     loadSidebar();

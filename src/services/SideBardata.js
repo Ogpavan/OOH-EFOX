@@ -46,15 +46,16 @@ export async function fetchNavItems(companyId, roleId) {
   try {
     const response = await axios.request(config);
     const pages = response.data;
+    console.log("Fetched pages:", pages);
 
-    // Build parent items
+    // Build parent items, only include if CanView !== "0"
     const parents = pages
-      .filter((p) => p.ParentPageId === "0")
+      .filter((p) => p.ParentPageId === "0" && p.CanView !== "0")
       .sort((a, b) => Number(a.DisplayOrder) - Number(b.DisplayOrder))
       .map((parent) => {
-        // Find children
+        // Find children, only include if CanView !== "0"
         const children = pages
-          .filter((c) => c.ParentPageId === parent.PageId)
+          .filter((c) => c.ParentPageId === parent.PageId && c.CanView !== "0")
           .sort((a, b) => Number(a.DisplayOrder) - Number(b.DisplayOrder))
           .map((child) => ({
             name: child.PageName,
