@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa";
 import BackButton from "@/components/ui/BackButton";
+import { showCustomToast } from "@/customcomponent/CustomToast"; // Add this import
 
 function ManagePermission() {
   const [selectedRoleId, setSelectedRoleId] = useState("");
@@ -105,12 +106,7 @@ function ManagePermission() {
     setCheckedPages(updated);
   };
 
-  // Reset handler
-  const handleReset = () => {
-    setCheckedPages({});
-    setSubmitMsg("");
-  };
-
+ 
   // Submit handler with API integration
   const handleSubmit = async () => {
     if (!selectedRoleId) return;
@@ -156,11 +152,19 @@ function ManagePermission() {
     setSubmitMsg(
       `Assigned Successfully! Success: ${successCount}, Failed: ${failCount}`
     );
+    if (successCount > 0) {
+      showCustomToast({ type: "success", message: "Permissions assigned successfully!" });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+    } else {
+      showCustomToast({ type: "error", message: "Failed to assign permissions!" });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center  py-8 px-6">
-      <div className="w-full max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center  py-8 px-6 ">
+      <div className="w-full ">
         {/* <h1 className="text-xl font-semibold text-gray-900 mb-5 text-center">Manage Permission</h1> */}
         <div className="flex items-center py-5">
 
@@ -233,7 +237,7 @@ function ManagePermission() {
             {submitMsg && (
               <div className="mb-2 text-green-600 font-medium text-sm text-center">{submitMsg}</div>
             )}
-            <div className="space-y-2 w-full flex flex-col items-center">
+            <div className="space-y-3 w-full flex flex-col pl-18">
               {parents.map(parent => (
                 <div key={parent.PageId} className="border rounded p-3 bg-gray-50 w-full max-w-3xl mb-2">
                   <div className="flex items-center mb-1">
