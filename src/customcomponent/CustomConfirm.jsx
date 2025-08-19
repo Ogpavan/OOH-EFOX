@@ -17,7 +17,8 @@ export function CustomConfirm({
   actionText = "Continue",
   onConfirm = () => {},
   onCancel = () => {},
-  open = true, // always open when rendered
+  open = true,
+  actionColor = "bg-red-600 text-white", // default for delete
 }) {
   return (
     <AlertDialog open={open}>
@@ -28,7 +29,12 @@ export function CustomConfirm({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel}>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{actionText}</AlertDialogAction>
+          <AlertDialogAction
+            onClick={onConfirm}
+            className={actionColor}
+          >
+            {actionText}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

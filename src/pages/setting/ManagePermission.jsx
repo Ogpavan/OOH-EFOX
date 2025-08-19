@@ -163,7 +163,7 @@ function ManagePermission() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center  py-8 px-6 ">
+    <div className="min-h-screen  flex flex-col items-center  py-8 px-6 ">
       <div className="w-full ">
         {/* <h1 className="text-xl font-semibold text-gray-900 mb-5 text-center">Manage Permission</h1> */}
         <div className="flex items-center py-5">

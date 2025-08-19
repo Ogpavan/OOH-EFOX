@@ -1,4 +1,7 @@
 export const themes = {
+  // Shared professional font for clarity & consistency
+  // Recommended stack: Inter with sensible system fallbacks
+  // fontFamily applied consistently across all themes below
   forest: {
     sidebarBg: "#0E4B38",
     sidebarText: "#fff",
@@ -8,13 +11,13 @@ export const themes = {
     chevronColor: "rgba(255,255,255,0.6)",
     popupBg: "#fff",
     popupText: "#0E4B38",
-    popupItemBg: "rgba(14,75,56,0.1)",
-    childText: "rgba(255,255,255,0.7)",
+    popupItemBg: "rgba(14,75,56,0.06)",
+    childText: "rgba(255,255,255,0.85)",
     childBg: "transparent",
-    childDot: "rgba(255,255,255,0.4)",
-    footerText: "rgba(255,255,255,0.6)",
-    fontFamily: "Inter, sans-serif",
-    bodyBg: "#F3F7F4", // <-- light background
+    childDot: "rgba(255,255,255,0.6)",
+    footerText: "rgba(255,255,255,0.7)",
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#F3F7F4",
   },
   barbie: {
     sidebarBg: "#F8BBD0",
@@ -30,8 +33,8 @@ export const themes = {
     childBg: "transparent",
     childDot: "#F8BBD0",
     footerText: "#AD1457",
-    fontFamily: "Comic Sans MS, cursive, sans-serif",
-    bodyBg: "#FFF0F6", // <-- light background
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#FFF0F6",
   },
   ocean: {
     sidebarBg: "#01579B",
@@ -47,8 +50,8 @@ export const themes = {
     childBg: "transparent",
     childDot: "#B3E5FC",
     footerText: "#0288D1",
-    fontFamily: "Arial, sans-serif",
-    bodyBg: "#E3F2FD", // <-- light background
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#E3F2FD",
   },
   sunset: {
     sidebarBg: "#FF7043",
@@ -64,8 +67,8 @@ export const themes = {
     childBg: "transparent",
     childDot: "#FFAB91",
     footerText: "#FF7043",
-    fontFamily: "Georgia, serif",
-    bodyBg: "#FFF3E0", // <-- light background
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#FFF3E0",
   },
   cyber: {
     sidebarBg: "#212121",
@@ -81,7 +84,94 @@ export const themes = {
     childBg: "transparent",
     childDot: "#B9F6CA",
     footerText: "#00E676",
-    fontFamily: "Roboto Mono, monospace",
-    bodyBg: "#F5F5F5", // <-- light background
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#F5F5F5",
+  },
+
+  // Additional professional themes
+  professional: {
+    sidebarBg: "#0F172A",        // dark navy
+    sidebarText: "#E6EEF8",      // pale text
+    sidebarBorder: "rgba(230,238,248,0.08)",
+    activeBg: "#E6EEF8",
+    activeText: "#0F172A",
+    chevronColor: "rgba(230,238,248,0.6)",
+    popupBg: "#0F172A",
+    popupText: "#E6EEF8",
+    popupItemBg: "rgba(255,255,255,0.03)",
+    childText: "rgba(230,238,248,0.9)",
+    childBg: "transparent",
+    childDot: "rgba(230,238,248,0.6)",
+    footerText: "rgba(230,238,248,0.7)",
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#F7FAFC",
+  },
+  slate: {
+    sidebarBg: "#0B1F2D",       // deep slate
+    sidebarText: "#DDE7EE",
+    sidebarBorder: "rgba(221,231,238,0.08)",
+    activeBg: "#DDE7EE",
+    activeText: "#0B1F2D",
+    chevronColor: "rgba(221,231,238,0.6)",
+    popupBg: "#0B1F2D",
+    popupText: "#DDE7EE",
+    popupItemBg: "rgba(255,255,255,0.03)",
+    childText: "rgba(221,231,238,0.9)",
+    childBg: "transparent",
+    childDot: "rgba(221,231,238,0.6)",
+    footerText: "rgba(221,231,238,0.7)",
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#F1F5F9",
+  },
+  modern: {
+    sidebarBg: "#0B1320",
+    sidebarText: "#D1FAF6",
+    sidebarBorder: "rgba(209,250,246,0.06)",
+    activeBg: "#D1FAF6",
+    activeText: "#0B1320",
+    chevronColor: "rgba(209,250,246,0.6)",
+    popupBg: "#0B1320",
+    popupText: "#D1FAF6",
+    popupItemBg: "rgba(16,185,129,0.06)",
+    childText: "rgba(209,250,246,0.9)",
+    childBg: "transparent",
+    childDot: "rgba(16,185,129,0.5)",
+    footerText: "rgba(209,250,246,0.7)",
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#FBFDFF",
+  },
+  neutral: {
+    sidebarBg: "#FFFFFF",
+    sidebarText: "#374151",
+    sidebarBorder: "rgba(55,65,81,0.08)",
+    activeBg: "#111827",
+    activeText: "#FFFFFF",
+    chevronColor: "rgba(55,65,81,0.6)",
+    popupBg: "#FFFFFF",
+    popupText: "#374151",
+    popupItemBg: "rgba(17,24,39,0.03)",
+    childText: "#4B5563",
+    childBg: "transparent",
+    childDot: "#E5E7EB",
+    footerText: "#6B7280",
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#F8FAFC",
+  },
+  midnight: {
+    sidebarBg: "#07103A",
+    sidebarText: "#EAF2FF",
+    sidebarBorder: "rgba(234,242,255,0.06)",
+    activeBg: "#9AD0FF",
+    activeText: "#07103A",
+    chevronColor: "rgba(234,242,255,0.6)",
+    popupBg: "#07103A",
+    popupText: "#EAF2FF",
+    popupItemBg: "rgba(154,208,255,0.08)",
+    childText: "rgba(234,242,255,0.9)",
+    childBg: "transparent",
+    childDot: "rgba(154,208,255,0.6)",
+    footerText: "rgba(234,242,255,0.7)",
+    fontFamily: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    bodyBg: "#F4F8FF",
   },
 };

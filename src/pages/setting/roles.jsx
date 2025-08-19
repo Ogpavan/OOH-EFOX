@@ -6,6 +6,8 @@ import { Alert } from "@/components/ui/alert.jsx";
 import {Skeleton} from "@/components/ui/skeleton.jsx";
 import AgTable from "@/components/common/AgTable.jsx";
 import BackButton from "@/components/ui/BackButton";
+import { showCustomToast } from "@/customcomponent/CustomToast";
+import { CustomConfirm } from "@/customcomponent/CustomConfirm";
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
@@ -25,6 +27,8 @@ export default function SettingRoles() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editRole, setEditRole] = useState(null);
   const [form, setForm] = useState({ Name: "", Role_Id: "" });
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState(null);
 
   // Get CompanyID and LoginID from localStorage
   const getCompanyID = () => localStorage.getItem("CompanyID");
@@ -106,16 +110,35 @@ export default function SettingRoles() {
       if (data.status) {
         setModalOpen(false);
         fetchRoles();
-      } else setError(data.message || "Failed to save role");
+        showCustomToast({
+          type: "success",
+          message: editRole ? "Role updated successfully!" : "Role created successfully!"
+        });
+      } else {
+        setError(data.message || "Failed to save role");
+        showCustomToast({
+          type: "error",
+          message: data.message || "Failed to save role"
+        });
+      }
     } catch (e) {
       setError("Error saving role");
+      showCustomToast({
+        type: "error",
+        message: "Error saving role"
+      });
     }
     setLoading(false);
   };
 
-  // Delete role
-  const deleteRole = async (role) => {
-    if (!window.confirm("Delete this role?")) return;
+  // Replace deleteRole to show confirm dialog
+  const deleteRole = (role) => {
+    setRoleToDelete(role);
+    setConfirmOpen(true);
+  };
+
+  // Confirm delete action
+  const confirmDelete = async () => {
     setLoading(true);
     setError("");
     try {
@@ -124,17 +147,25 @@ export default function SettingRoles() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           CompanyID: getCompanyID(),
-          ID: role.ID,
+          ID: roleToDelete.ID,
           LoginID: getLoginID(),
         }),
       });
       const data = await res.json();
-      if (data.status) fetchRoles();
-      else setError(data.message || "Failed to delete role");
+      if (data.status) {
+        showCustomToast({ type: "success", message: "Role deleted successfully!" });
+        fetchRoles();
+      } else {
+        setError(data.message || "Failed to delete role");
+        showCustomToast({ type: "error", message: data.message || "Failed to delete role" });
+      }
     } catch (e) {
       setError("Error deleting role");
+      showCustomToast({ type: "error", message: "Error deleting role" });
     }
     setLoading(false);
+    setConfirmOpen(false);
+    setRoleToDelete(null);
   };
 
   return (
@@ -195,6 +226,21 @@ export default function SettingRoles() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {confirmOpen && (
+        <CustomConfirm
+          heading="Delete Role"
+          message="Are you sure you want to delete this role?"
+          cancelText="Cancel"
+          actionText="Delete"
+          onConfirm={confirmDelete}
+          onCancel={() => {
+            setConfirmOpen(false);
+            setRoleToDelete(null);
+          }}
+          open={confirmOpen}
+          actionColor="bg-red-600 text-white" // red button for delete
+        />
+      )}
     </div>
   );
 }
