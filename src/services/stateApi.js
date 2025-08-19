@@ -24,7 +24,7 @@ export const getStateList = async () => {
   if (cache.states) return cache.states;
 
   try {
-    const response = await api.post("/statelist", { CompanyId: COMPANY_ID });
+    const response = await api.post("/statelist", { CompanyID: COMPANY_ID });
     cache.states = response.data;
     return response.data;
   } catch (error) {
