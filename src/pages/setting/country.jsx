@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import AgTable from '@/components/common/AgTable';
 import { showCustomToast } from '@/customcomponent/CustomToast';
 import { CustomConfirm } from '@/customcomponent/CustomConfirm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog.jsx'; // <-- added
+import { Edit, Trash2 } from 'lucide-react';
 
 // Dummy API functions (replace with real API calls)
 const fetchCountries = async () => [
@@ -21,17 +23,21 @@ export default function SettingCountry() {
   const [editingId, setEditingId] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [addPopupOpen, setAddPopupOpen] = useState(false); // <-- added
+
+  // company name from localStorage (do NOT show CompanyID in UI)
+  const companyName = localStorage.getItem("CompanyName") || ""; // only show explicit CompanyName, hide CompanyID
 
   useEffect(() => {
     fetchCountries().then(setCountries);
-  }, []);
+  }, []); 
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e && e.preventDefault && e.preventDefault();
     try {
       if (editingId) {
         const updated = await updateCountry({ id: editingId, ...form });
@@ -44,14 +50,17 @@ export default function SettingCountry() {
         showCustomToast({ type: "success", message: "Country added successfully!" });
       }
       setForm({ name: '', code: '' });
+      setAddPopupOpen(false); // close popup if open
     } catch (err) {
       showCustomToast({ type: "error", message: "Operation failed!" });
     }
   };
 
+  // open popup for edit — now opens dialog instead of filling inline form
   const handleEdit = (country) => {
     setForm({ name: country.name, code: country.code });
     setEditingId(country.id);
+    setAddPopupOpen(true);
   };
 
   // Show confirm dialog before delete
@@ -79,28 +88,50 @@ export default function SettingCountry() {
 
   // AG Grid columns
   const columnDefs = [
-    { headerName: "Name", field: "name", flex: 1 },
-    { headerName: "Code", field: "code", flex: 1 },
+    // Serial number column (computed from row index)
+    {
+      headerName: "S.No",
+      valueGetter: (params) => (params.node ? params.node.rowIndex + 1 : ""),
+      width: 90,
+      sortable: false,
+      filter: false,
+      cellClass: "text-center",
+    },
+
+    // Country name column (full width)
+    {
+      headerName: "Country Name",
+      field: "name",
+      flex: 1,
+      sortable: true,
+      filter: true,
+    },
+
+    // Actions
     {
       headerName: "Actions",
       field: "actions",
       cellRenderer: (params) => (
-        <div>
+        <div className="flex items-center gap-2">
           <button
-            className="text-blue-600 mr-2 underline"
+            type="button"
+            title="Edit"
+            className="p-1 rounded hover:bg-gray-100"
             onClick={() => handleEdit(params.data)}
           >
-            Edit
+            <Edit size={16} className="text-blue-600" />
           </button>
           <button
-            className="text-red-600 underline"
+            type="button"
+            title="Delete"
+            className="p-1 rounded hover:bg-gray-100"
             onClick={() => handleDelete(params.data.id)}
           >
-            Delete
+            <Trash2 size={16} className="text-red-600" />
           </button>
         </div>
       ),
-      flex: 1,
+      width: 160,
       sortable: false,
       filter: false,
     },
@@ -108,59 +139,35 @@ export default function SettingCountry() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center py-5">
-        <BackButton />
-        <h2 className="text-xl font-light tracking-tight">
-          Manage{" "}
-          <span className="font-bold text-3xl" style={{ color: "#EC5800" }}>
-            Country
-          </span>
-        </h2>
-      </div>
-      <form className="flex gap-4 items-end mb-6" onSubmit={handleSubmit}>
-        <div>
-          <Label htmlFor="country-name">Country Name</Label>
-          <Input
-            id="country-name"
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-40"
-            required
-          />
+      <div className="flex items-center justify-between py-5">
+        <div className="flex items-center gap-4">
+          <BackButton />
+          <h2 className="text-xl font-light tracking-tight">
+            Manage{" "}
+            <span className="font-bold text-3xl" style={{ color: "#EC5800" }}>
+              Country
+            </span>
+          </h2>
         </div>
+
+        {/* Add New button aligned to right */}
         <div>
-          <Label htmlFor="country-code">Country Code</Label>
-          <Input
-            id="country-code"
-            type="text"
-            name="code"
-            value={form.code}
-            onChange={handleChange}
-            className="w-20"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-orange-600 text-white px-4 py-2 rounded"
-        >
-          {editingId ? "Update" : "Add"}
-        </button>
-        {editingId && (
           <button
             type="button"
-            className="ml-2 px-3 py-2 rounded border"
             onClick={() => {
               setEditingId(null);
               setForm({ name: '', code: '' });
+              setAddPopupOpen(true);
             }}
+            className="bg-orange-600 text-white px-3 py-2 rounded"
           >
-            Cancel
+            Add New
           </button>
-        )}
-      </form>
+        </div>
+      </div>
+
+      {/* Removed inline add/edit inputs — use dialog popup instead */}
+
       <AgTable
         rowData={countries}
         columnDefs={columnDefs}
@@ -171,6 +178,75 @@ export default function SettingCountry() {
           No countries found.
         </div>
       )}
+
+      {/* Add / Edit popup */}
+      {addPopupOpen && (
+        <Dialog
+          open={addPopupOpen}
+          onOpenChange={(open) => {
+            setAddPopupOpen(open);
+            if (!open) {
+              // reset when dialog closed
+              setEditingId(null);
+              setForm({ name: '', code: '' });
+            }
+          }}
+        >
+          {/* make dialog content a reasonable max-width and full width inside */}
+          <DialogContent className="max-w-lg w-full">
+            <DialogHeader>
+              <DialogTitle>{editingId ? "Edit Country" : "Add Country"}</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2 w-full">
+              {companyName && (
+                <div className="w-full flex flex-col gap-2">
+                  <Label>Company</Label>
+                  <div className="mt-1 px-3 py-2 rounded border bg-gray-50 w-full">
+                    {companyName}
+                  </div>
+                </div>
+              )}
+
+              {/* Only Country Name input shown (removed Country Code) */}
+              <div className="w-full flex flex-col gap-2">
+                <Label htmlFor="popup-country-name">Country Name</Label>
+                <Input
+                  id="popup-country-name"
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full"
+                  placeholder="e.g. India"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <button
+                type="button"
+                className="px-4 py-2 rounded border"
+                onClick={() => {
+                  setAddPopupOpen(false);
+                  setEditingId(null);
+                  setForm({ name: '', code: '' });
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="ml-2 bg-orange-600 text-white px-4 py-2 rounded"
+                onClick={handleSubmit}
+              >
+                {editingId ? "Update Country" : "Add Country"}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {confirmOpen && (
         <CustomConfirm
           heading="Delete Country"
