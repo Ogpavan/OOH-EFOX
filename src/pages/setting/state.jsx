@@ -1,9 +1,19 @@
+import BackButton from '@/components/ui/BackButton';
 import React from 'react';
 
 export default function SettingState() {
   return (
     <div className="p-6">
-      <h2 className="text-xl font-semibold">State</h2>
+      <div className="flex items-center py-5">
+
+        <BackButton />
+        <h2 className="text-xl font-light tracking-tight">
+          Manage{" "}
+          <span className="font-bold text-3xl" style={{ color: "#EC5800" }}>
+            State
+          </span>
+        </h2>
+      </div>
       <p className="text-sm text-gray-600 mt-2">Placeholder for state management.</p>
     </div>
   );

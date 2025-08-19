@@ -22,13 +22,10 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { useTheme } from "@/lib/theme-context.jsx";
-import axios from "axios";
-import { defaultNavItems } from "@/services/SideBardata.js"; 
+import { fetchNavItems } from "@/services/SideBardata.js"; // <-- Import dynamic fetch function
 
 export default function Sidebar({ collapsed, setCollapsed }) {
- 
-  const [navItems, setNavItems] = useState(defaultNavItems);
-  const [iconsMap, setIconsMap] = useState({}); // used only if API returns icon names (strings)
+  const [navItems, setNavItems] = useState([]);
   const [openMenus, setOpenMenus] = useState({});
   const [popupMenu, setPopupMenu] = useState(null);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
@@ -36,6 +33,17 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
   const parentBtnRefs = useRef({});
   const { theme } = useTheme();
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadSidebar() {
+      // Replace with your actual companyId and roleId
+      const items = await fetchNavItems("1032", "27");
+      if (mounted) setNavItems(items);
+    }
+    loadSidebar();
+    return () => { mounted = false; };
+  }, []);
 
   // helper: dynamic import a lucide icon by its exported name (e.g. "Briefcase")
   async function importIconByName(iconName) {
@@ -50,41 +58,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       return null;
     }
   }
-
-  useEffect(() => {
-    let mounted = true;
-    async function fetchMenu() {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/menu/list`);
-        const items = Array.isArray(res.data) ? res.data : res.data?.items || [];
-        if (!mounted || items.length === 0) return;
-
-        // if API returns icons as strings, import them and set iconsMap, then set navItems to API items
-        const iconNames = Array.from(new Set(items.map(i => i.icon).filter(Boolean).filter(n => typeof n === "string")));
-        if (iconNames.length) {
-          const imports = await Promise.all(iconNames.map(async (name) => {
-            const comp = await importIconByName(name);
-            return [name, comp];
-          }));
-          if (!mounted) return;
-          const map = {};
-          imports.forEach(([name, comp]) => {
-            map[name] = comp;
-          });
-          setIconsMap(map);
-        }
-
-        // replace nav items with API response
-        setNavItems(items);
-      } catch (error) {
-        // keep default navItems on error
-        console.error("Failed to load menu from API, using default menu:", error);
-      }
-    }
-
-    fetchMenu();
-    return () => { mounted = false; };
-  }, []);
 
   // Hide all open menus except the current one
   const toggleMenu = (name) => {
