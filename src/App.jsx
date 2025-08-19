@@ -44,6 +44,7 @@ import LeadFollowUps from './pages/leads/follow-ups.jsx';
 import LeadReports from './pages/leads/reports.jsx';
 import Report from './pages/tasks/Report.jsx';
 import { Toaster } from "sonner";
+import Profile from './pages/CompanyPages/Profile.jsx';
 
 
 function ThemeToggle() {
@@ -65,6 +66,7 @@ function App() {
               <ThemeToggle />
               <Routes>
                 <Route path="/company/add" element={<CompanyAdd />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/company/manage" element={<CompanyManage />} />
                 <Route path="/company/view/:id" element={<ViewCompany />} />
                 <Route path="/clients/add" element={<ClientsAdd />} />

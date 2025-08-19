@@ -2,81 +2,33 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import {
-  MdBusiness, MdPeople, MdGroupAdd, MdGroups, MdPermMedia,
-  MdEmail, MdReceipt, MdStorage, MdSettings, MdAttachMoney, MdTask,
-  MdContactPhone,
-} from "react-icons/md";
-import { ChevronRight } from "lucide-react";
+  ChevronRight,
+  Briefcase,
+  Users,
+  UserPlus,
+  Image,
+  Mail,
+  FileText,
+  BarChart2,
+  Settings,
+  DollarSign,
+  CheckSquare,
+  PhoneCall,
+} from "lucide-react";
 import {
   Select,
   SelectTrigger,
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { useTheme } from "@/lib/theme-context.jsx"; // <-- import useTheme
-
-const navItems = [
-  { name: "Company", icon: MdBusiness, children: [
-      { name: "Add Company", to: "/company/add" },
-      { name: "Manage Company", to: "/company/manage" },
-  ]},
-  { name: "Clients", icon: MdPeople, children: [
-      { name: "Add Client", to: "/clients/add" },
-      { name: "Manage Clients", to: "/clients/manage" },
-  ]},
-  { name: "Vendors  ", icon: MdGroupAdd, children: [
-      { name: "Add Vendor", to: "/vendors/add" },
-      { name: "Manage Vendors", to: "/vendors/manage" },
-  ]},
-  { name: "Staff ", icon: MdGroups, children: [
-      { name: "Add Staff", to: "/staff/add" },
-      { name: "Manage Staff", to: "/staff/manage" },
-  ]},
-  { name: "Media ", icon: MdPermMedia, children: [
-      { name: "Add Media", to: "/media/add" },
-      { name: "Manage Media", to: "/media/manage" },
-  ]},
-  { name: "Campaign", icon: MdEmail, children: [
-      { name: "Create Proposal", to: "/campaign/add" },
-      { name: "Manage Proposal", to: "/campaign/manage" },
-      { name: "Manage Order", to: "/campaign/order" },
-  ]},
-  { name: "Purchase Order", icon: MdReceipt, children: [
-      { name: "Add PO", to: "/purchase-order/add" },
-      { name: "Manage PO", to: "/purchase-order/manage" },
-  ]},
-  {
-  name: "Report", icon: MdStorage, children: [
-    { name: "Media Tracker", to: "/report/media-tracker" },
-    { name: "Media Expiry Tracker", to: "/report/media-expiry-tracker" },
-    { name: "Media ROI Tracker", to: "/report/media-roi-tracker" },
-    { name: "Media Campaign Tracker", to: "/report/media-campaign-tracker" },
-    { name: "Company Outstanding", to: "/report/company-outstanding" },
-  ]
-},
-  { name: "Setting", icon: MdSettings, children: [
-      { name: "App Configuration", to: "/setting/app-Configuration" },
-     
-  ]},
-  { name: "Expense", icon: MdAttachMoney, children: [
-      { name: "Manage Expense", to: "/expense/add" },
-    
-  ]},
-  { name: "Task  ", icon: MdTask, children: [
-      { name: "Manage Task", to: "/tasks/add" },
-      { name: "Task Report", to: "/tasks/report" },
-  ]},
-  {
-    name: "Lead Management", icon: MdContactPhone, children: [
-      { name: "Add Lead", to: "/leads/add" },
-      { name: "Lead List", to: "/leads/list" },
-      { name: "Follow-Ups", to: "/leads/follow-ups" },
-      { name: "Reports & Analytics", to: "/leads/reports" },
-    ]
-  },
-];
+import { useTheme } from "@/lib/theme-context.jsx";
+import axios from "axios";
+import { defaultNavItems } from "@/services/SideBardata.js"; 
 
 export default function Sidebar({ collapsed, setCollapsed }) {
+ 
+  const [navItems, setNavItems] = useState(defaultNavItems);
+  const [iconsMap, setIconsMap] = useState({}); // used only if API returns icon names (strings)
   const [openMenus, setOpenMenus] = useState({});
   const [popupMenu, setPopupMenu] = useState(null);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
@@ -84,6 +36,55 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
   const parentBtnRefs = useRef({});
   const { theme } = useTheme();
+
+  // helper: dynamic import a lucide icon by its exported name (e.g. "Briefcase")
+  async function importIconByName(iconName) {
+    if (!iconName) return null;
+    try {
+      const module = await import(
+        /* @vite-ignore */ "lucide-react"
+      );
+      return module[iconName] || null;
+    } catch (err) {
+      console.warn("lucide-react icon not found:", iconName, err);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchMenu() {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/menu/list`);
+        const items = Array.isArray(res.data) ? res.data : res.data?.items || [];
+        if (!mounted || items.length === 0) return;
+
+        // if API returns icons as strings, import them and set iconsMap, then set navItems to API items
+        const iconNames = Array.from(new Set(items.map(i => i.icon).filter(Boolean).filter(n => typeof n === "string")));
+        if (iconNames.length) {
+          const imports = await Promise.all(iconNames.map(async (name) => {
+            const comp = await importIconByName(name);
+            return [name, comp];
+          }));
+          if (!mounted) return;
+          const map = {};
+          imports.forEach(([name, comp]) => {
+            map[name] = comp;
+          });
+          setIconsMap(map);
+        }
+
+        // replace nav items with API response
+        setNavItems(items);
+      } catch (error) {
+        // keep default navItems on error
+        console.error("Failed to load menu from API, using default menu:", error);
+      }
+    }
+
+    fetchMenu();
+    return () => { mounted = false; };
+  }, []);
 
   // Hide all open menus except the current one
   const toggleMenu = (name) => {
@@ -114,11 +115,22 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [collapsed, popupMenu]);
 
+  const DefaultIcon = ({ size = 24 }) => (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: 4,
+      background: 'rgba(255,255,255,0.12)'
+    }} />
+  );
+
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-out z-[100] shadow-2xl overflow-visible
+      className={`fixed left-0 top-0 bottom-0 flex flex-col transition-all duration-300 ease-out z-[100] shadow-2xl overflow-visible
         ${collapsed ? "w-20" : "w-72"}`}
       style={{
+        // explicit 100% height ensures full-height inside transformed/zoomed pages
+        height: "100%",
         fontFamily: theme.fontFamily,
         background: theme.sidebarBg,
       }}
@@ -155,13 +167,17 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* MENU */}
       <div
         className="flex-1 overflow-y-auto px-4 py-4 space-y-2 relative custom-scrollbar"
-        style={{
-          
-        }}
       >
         {navItems.map((item) => {
-          const Icon = item.icon;
-          const activeParent = item.children.some((c) =>
+          // support both: item.icon can be
+          // - a string (API or config) -> resolve from iconsMap
+          // - a React component (from SideBardata import) -> use directly
+          // fall back to DefaultIcon
+          const IconComponent = typeof item.icon === "string"
+            ? (iconsMap[item.icon] || DefaultIcon)
+            : (item.icon || DefaultIcon);
+          const Icon = IconComponent;
+          const activeParent = item.children?.some((c) =>
             location.pathname.startsWith(c.to)
           );
           if (!parentBtnRefs.current[item.name]) parentBtnRefs.current[item.name] = React.createRef();
@@ -189,7 +205,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 style={{
                   background: activeParent ? theme.activeBg : theme.sidebarBg,
                   color: activeParent ? theme.activeText : theme.sidebarText,
-                  border: item.children.some((child) => location.pathname === child.to)
+                  border: item.children?.some((child) => location.pathname === child.to)
                     ? "2px solid #fff"
                     : "2px solid transparent",
                 }}
@@ -207,7 +223,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     />
                   </>
                 )}
-                {/* Remove previous activeParent indicator */}
               </button>
 
               {/* Children: popup menu */}
@@ -217,7 +232,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                     className="sidebar-popup-menu rounded-md shadow-2xl py-2 px-2 min-w-[160px] flex flex-col gap-1 page-fade-in"
                     style={{
                       position: "fixed",
-                      top: Math.min(menuPos.top, window.innerHeight - (item.children.length * 44) - 24), // 44px per item + some padding
+                      top: Math.min(menuPos.top, window.innerHeight - (item.children?.length || 1) * 44 - 24),
                       left: menuPos.left,
                       zIndex: 9999,
                       background: theme.popupBg,
@@ -225,7 +240,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                       overflowY: "auto",
                     }}
                   >
-                    {item.children.map((child) => (
+                    {item.children?.map((child) => (
                       <button
                         key={child.name}
                         onClick={() => {
@@ -251,7 +266,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                   className="mt-2 ml-10 space-y-1 border-l pl-4"
                   style={{ borderColor: theme.sidebarBorder }}
                 >
-                  {item.children.map((child) => {
+                  {item.children?.map((child) => {
                     const activeChild = location.pathname === child.to;
                     return (
                       <Link
@@ -259,10 +274,10 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                         to={child.to}
                         className={`group flex items-center px-3 py-2.5 text-sm rounded transition-all duration-200 ease-out`}
                         style={{
-                          color: activeChild ? "#fff" : theme.childText, // White text if active
-                          background: theme.childBg, // No bg change
+                          color: activeChild ? "#fff" : theme.childText,
+                          background: theme.childBg,
                           fontWeight: activeChild ? "500" : "400",
-                          border: activeChild ? "2px solid #fff" : "2px solid transparent", // White border if active
+                          border: activeChild ? "2px solid #fff" : "2px solid transparent",
                         }}
                       >
                         <div

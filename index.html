@@ -4,7 +4,43 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <title>OOH</title>
+
+    <style>
+      /* Zoom */
+      html { zoom: 0.8; }
+      @supports not (zoom: 0.8) {
+        html {
+          transform: scale(0.8);
+          transform-origin: 0 0;
+          width: 125%;
+        }
+      }
+
+      /* Make the whole app 100% height so children can be full height */
+      html, body, #root { height: 100%; margin: 0; }
+
+      /* App-level layout helper:
+         - .app should be the top-level element rendered inside #root (e.g. <div class="app">)
+         - it becomes a column flex container so header/footer and main can size correctly
+       */
+      #root > .app {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+      }
+
+      /* main content area should expand to fill remaining vertical space */
+      #root > .app main {
+        flex: 1 1 auto;
+        min-height: 0; /* allow proper scrolling inside children */
+      }
+
+      /* If sidebar is positioned relative instead of fixed, make it full height:
+         change to .sidebar { height: 100%; } or keep h-screen for fixed positioning.
+      */
+      body { min-width: 320px; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

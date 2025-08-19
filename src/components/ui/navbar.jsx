@@ -62,7 +62,12 @@ export function Navbar({ onToggleSidebar }) {
           >
             <DropdownMenuLabel>Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem 
+            //on click to navigate to profile page
+            onClick={() => {
+              navigate('/profile');
+            }}
+            className="cursor-pointer">
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer">
