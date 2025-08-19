@@ -60,8 +60,8 @@ export function Navbar({ onToggleSidebar }) {
             className="min-w-[180px] !z-[9999] bg-white border shadow-lg"
             sideOffset={5}
           >
-            <DropdownMenuLabel>Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            {/* <DropdownMenuLabel>Account</DropdownMenuLabel> */}
+            {/* <DropdownMenuSeparator /> */}
             <DropdownMenuItem 
             //on click to navigate to profile page
             onClick={() => {
@@ -70,7 +70,12 @@ export function Navbar({ onToggleSidebar }) {
             className="cursor-pointer">
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem 
+            
+            onClick={() => {
+              navigate('/setting/app-Configuration');
+            }}
+            className="cursor-pointer">
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />

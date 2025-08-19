@@ -84,7 +84,17 @@ export const defaultNavItems = [
   {
     name: "Setting",
     icon: Settings,
-    children: [{ name: "App Configuration", to: "/setting/app-Configuration" }],
+    children: [
+      { name: "Company", to: "/setting/company" },
+      { name: "Roles", to: "/setting/roles" },
+      { name: "Common Master", to: "/setting/common-master" },
+      { name: "Media Master", to: "/setting/media-master" },
+      { name: "Country", to: "/setting/country" },
+      { name: "State", to: "/setting/state" },
+      { name: "City", to: "/setting/city" },
+      { name: "Area", to: "/setting/area" },
+      { name: "Manage Permission", to: "/setting/ManagePermission" },
+    ],
   },
   {
     name: "Expense",

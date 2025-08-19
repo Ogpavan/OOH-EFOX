@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import axios from "axios";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -87,7 +88,88 @@ const companies = [
 
 export default function ViewCompany() {
     const { id } = useParams();
-    const company = companies.find((c) => c.id === Number(id)) || companies[0]; // Default to first company for demo
+    // seed initial data from static list (demo) — will be replaced by API response if available
+    const initial = companies.find((c) => c.id === Number(id)) || companies[0];
+    const [company, setCompany] = useState(initial);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      let mounted = true;
+      async function fetchCompany() {
+        try {
+          setLoading(true);
+          const CompanyId = localStorage.getItem("CompanyID") || "1032";
+          const loginId = localStorage.getItem("loginId") || "248";
+          const ClientCompanyId = id || initial.id;
+
+          const payload = { CompanyId, loginId, ClientCompanyId };
+
+          const res = await axios.post(
+            "https://betaoohsuite.efoxtechnologies.com/api/client/getCompanyDetailsWithContacts",
+            payload,
+            { headers: { "Content-Type": "application/json" } }
+          );
+
+          if (!mounted) return;
+
+          if (res.data && res.data.success) {
+            const compArr = Array.isArray(res.data.company) ? res.data.company : [];
+            const apiComp = compArr[0] || {};
+            const apiContacts = Array.isArray(res.data.contacts) ? res.data.contacts : [];
+
+            // map API shape to local shape used by the component
+            const mappedCompany = {
+              name: apiComp.FullName || initial.name,
+              phone: apiComp.Phone || initial.phone,
+              email: apiComp.Email || initial.email,
+              address: apiComp.Address || initial.address,
+              locality: apiComp.Landmark || initial.locality,
+              city: apiComp.City || initial.city,
+              state: apiComp.State || initial.state,
+              masterContact: (() => {
+                const m = apiContacts.find(c => String(c.MasterContact).toLowerCase() === "yes");
+                if (m) {
+                  return {
+                    name: m.FullName || "",
+                    designation: m.Designation || "",
+                    phone: m.Phone || "",
+                    email: m.Email || "",
+                    industry: m.Industry || "",
+                    createdBy: m.CreatedBY || m.CreatedBy || "",
+                    createdOn: m.CreatedDate || "",
+                  };
+                }
+                // fallback: use initial.masterContact if no master found
+                return initial.masterContact;
+              })(),
+              contacts: apiContacts.map(c => ({
+                name: c.FullName || "",
+                phone: c.Phone || "",
+                email: c.Email || "",
+                address: c.Address || "",
+                locality: c.Landmark || "",
+                state: c.State || "",
+                city: c.City || "",
+                generationDate: c.CreatedDate || "",
+                createdBy: c.CreatedBY || c.CreatedBy || "",
+              })),
+            };
+
+            setCompany(mappedCompany);
+          } else {
+            // keep initial if API returned failure
+            console.warn("getCompanyDetailsWithContacts returned no data or success=false", res.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch company details:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      fetchCompany();
+      return () => { mounted = false; };
+    }, [id]);
 
     if (!company) {
         return (
@@ -203,7 +285,7 @@ export default function ViewCompany() {
                             <UserCheck className="h-5 w-5 text-orange-600" />
                             <h3 className="text-lg font-semibold">All Contacts</h3>
                             <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
-                                {company.contacts.length} contacts
+                                {Array.isArray(company.contacts) ? company.contacts.length : 0} contacts
                             </span>
                         </div>
                     </div>
@@ -254,21 +336,21 @@ export default function ViewCompany() {
                                             </div>
                                         </TableCell> */}
                                         <TableCell>{contact.createdBy}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-
+                                     </TableRow>
+                                 ))}
+                             </TableBody>
+                         </Table>
+                     </div>
+ 
                     {/* Empty State */}
-                    {company.contacts.length === 0 && (
-                        <div className="text-center py-12">
-                            <UserCheck className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500">No contacts found</p>
-                        </div>
-                    )}
-                </Card>
-            </div>
-        </div>
-    );
-}
+                    {(!company.contacts || company.contacts.length === 0) && (
+                         <div className="text-center py-12">
+                             <UserCheck className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                             <p className="text-gray-500">No contacts found</p>
+                         </div>
+                     )}
+                 </Card>
+             </div>
+         </div>
+     );
+ }

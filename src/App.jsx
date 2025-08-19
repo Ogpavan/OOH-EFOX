@@ -21,7 +21,7 @@ import PurchaseOrderManage from './pages/purchase-order/manage.jsx';
 
 import SettingAdd from './pages/setting/add.jsx';
 import SettingManage from './pages/setting/manage.jsx';
-import SettingProfile from './pages/setting/profile.jsx';
+
 import SettingPreferences from './pages/setting/preferences.jsx';
 import ExpenseAdd from './pages/expense/add.jsx';
 
@@ -36,7 +36,14 @@ import MediaCampaignTracker from './pages/report/MediaCampaignTracker.jsx';
 import MediaROITracker from './pages/report/MediaROITracker.jsx';
 import MediaExpiryTracker from './pages/report/MediaExpiryTracker.jsx';
 import MediaTracker from './pages/report/MediaTracker.jsx';
-import AppConfig from './pages/setting/AppConfig.jsx';
+import SettingCompany from './pages/setting/company.jsx';
+import SettingRoles from './pages/setting/roles.jsx';
+import SettingCommonMaster from './pages/setting/common-master.jsx';
+import SettingMediaMaster from './pages/setting/media-master.jsx';
+import SettingCountry from './pages/setting/country.jsx';
+import SettingState from './pages/setting/state.jsx';
+import SettingCity from './pages/setting/city.jsx';
+import SettingArea from './pages/setting/area.jsx';
 import AddLead from './pages/leads/AddLead.jsx';
 import LeadList from './pages/leads/list.jsx';
 import LeadDetails from './pages/leads/detail.jsx';
@@ -45,6 +52,8 @@ import LeadReports from './pages/leads/reports.jsx';
 import Report from './pages/tasks/Report.jsx';
 import { Toaster } from "sonner";
 import Profile from './pages/CompanyPages/Profile.jsx';
+import TempPurpoe from './pages/setting/tempPurpoe.jsx';
+import ManagePermission from './pages/setting/ManagePermission.jsx';
 
 
 function ThemeToggle() {
@@ -66,6 +75,7 @@ function App() {
               <ThemeToggle />
               <Routes>
                 <Route path="/company/add" element={<CompanyAdd />} />
+                <Route path="/Devaddpages" element={<TempPurpoe />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/company/manage" element={<CompanyManage />} />
                 <Route path="/company/view/:id" element={<ViewCompany />} />
@@ -90,7 +100,15 @@ function App() {
                 <Route path="/report/media-campaign-tracker" element={<MediaCampaignTracker />} />
                 <Route path="/report/company-outstanding" element={<CompanyOutstanding />} />
                
-                <Route path="/setting/app-Configuration" element={<AppConfig />} />
+                <Route path="/setting/company" element={<SettingCompany />} />
+                <Route path="/setting/roles" element={<SettingRoles />} />
+                <Route path="/setting/common-master" element={<SettingCommonMaster />} />
+                <Route path="/setting/media-master" element={<SettingMediaMaster />} />
+                <Route path="/setting/country" element={<SettingCountry />} />
+                <Route path="/setting/state" element={<SettingState />} />
+                <Route path="/setting/city" element={<SettingCity />} />
+                <Route path="/setting/area" element={<SettingArea />} />
+                <Route path="/setting/ManagePermission" element={<ManagePermission />} />
                
                 <Route path="/expense/add" element={<ExpenseAdd />} />
                 
