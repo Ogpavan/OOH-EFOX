@@ -3,23 +3,24 @@ import axios from "axios";
 const BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/base`;
 const COMPANY_ID = localStorage.getItem("CompanyID"); // You can make this dynamic if needed
 
-export const getStateList = async () => {
-  const response = await axios.post(
-    `${BASE_URL}/statelist`,
-    { CompanyId: COMPANY_ID },
-    { headers: { "Content-Type": "application/json" } }
-  );
-  return response.data;
-};
+// export const getStateList = async () => {
+//   const response = await axios.post(
+//     `${BASE_URL}/statelist`,
+//     { CompanyId: COMPANY_ID },
+//     { headers: { "Content-Type": "application/json" } }
+//   );
+//   console.log("State List Response:", response.data);
+//   return response.data;
+// };
 
-export const getCityListByStateId = async (stateId) => {
-  const response = await axios.post(
-    `${BASE_URL}/CityListByStateId`,
-    { CompanyId: COMPANY_ID, StateId: stateId },
-    { headers: { "Content-Type": "application/json" } }
-  );
-  return response.data;
-};
+// export const getCityListByStateId = async (stateId) => {
+//   const response = await axios.post(
+//     `${BASE_URL}/CityListByStateId`,
+//     { CompanyId: COMPANY_ID, StateId: stateId },
+//     { headers: { "Content-Type": "application/json" } }
+//   );
+//   return response.data;
+// };
 
 export const getDesignationList = async () => {
   const response = await axios.post(

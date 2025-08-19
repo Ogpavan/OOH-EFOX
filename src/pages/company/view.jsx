@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Building2, User, Phone, Mail, MapPin, Calendar, UserCheck } from "lucide-react";
+import BackButton from "@/components/ui/BackButton";
 
 // Dummy data (should come from API or context in real app)
 const companies = [
@@ -102,7 +103,8 @@ export default function ViewCompany() {
     return (
         <div className="h-screen flex flex-col   page-fade-in" >
             {/* Header */}
-            <div className="px-6 py-4  ">
+            <div className="px-6 py-4   flex">
+                <BackButton />
                 <h2 className="text-xl tracking-tight">
                     View{" "}
                     <span className="font-bold text-2xl" style={{ color: "#EC5800" }}>

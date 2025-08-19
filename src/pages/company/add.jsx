@@ -12,7 +12,9 @@ import { Link } from "react-router-dom";
 import { Formik, Form, FastField, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { showCustomToast } from "@/customcomponent/CustomToast";
-import { getStateList, getCityListByStateId } from "@/services/apiService";
+import { getStateList, getCityList } from "@/services/stateApi"; // <-- use stateApi.js
+import axios from "axios"; // Add this import
+import BackButton from "@/components/ui/BackButton";
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -32,6 +34,7 @@ const validationSchema = Yup.object({
   designation: Yup.string().max(50, "Max 50 characters"),
   aboutCompany: Yup.string().max(200, "Max 200 characters"),
   aboutContact: Yup.string().max(200, "Max 200 characters"),
+  contactGender: Yup.string().required("Gender is required"),
 });
 
 export default function AddCompany() {
@@ -39,12 +42,20 @@ export default function AddCompany() {
   const [cities, setCities] = useState([]);
   const [selectedStateId, setSelectedStateId] = useState("");
 
+//fetch CompanyID
+  useEffect(() => {
+    const companyId = localStorage.getItem("CompanyID");
+    if (companyId) {
+      
+    }
+  }, []);
+
+
   useEffect(() => {
     async function fetchStates() {
       try {
-        const data = await getStateList();
+        const data = await getStateList(); // uses cache for O(1) after first fetch
         setStates(data);
-        // Debug: log type and value of states
         console.log("Type of states:", typeof data, "Is Array:", Array.isArray(data), data);
       } catch (error) {
         setStates([]);
@@ -57,8 +68,7 @@ export default function AddCompany() {
     async function fetchCities() {
       if (selectedStateId) {
         try {
-          const data = await getCityListByStateId(selectedStateId);
-          console.log("Cities Data:", data);
+          const data = await getCityList(selectedStateId); // uses cache for O(1) after first fetch
           setCities(data);
         } catch (error) {
           setCities([]);
@@ -74,12 +84,16 @@ export default function AddCompany() {
     <div className="min-h-screen p-8 page-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
+         <div className="flex items-center gap-2">
+          
+          <BackButton />
           <h2 className="text-xl font-light tracking-tight">
             Add{" "}
             <span className="font-bold text-3xl" style={{ color: "#EC5800" }}>
               Company
             </span>
           </h2>
+          </div> 
         </div>
         <Link to="/company/manage">
           <Button className="bg-blue-500 text-white">Manage Company</Button>
@@ -104,15 +118,66 @@ export default function AddCompany() {
           contactEmail: "",
           designation: "",
           aboutContact: "",
+          contactGender: "",
         }}
-        validationSchema={validationSchema}
+        validationSchema={Yup.object({
+          companyName: Yup.string().max(100, "Max 100 characters").required("Company name is required"),
+          companyMobile: Yup.string().max(15, "Max 15 digits").required("Mobile number is required"),
+          companyEmail: Yup.string().email("Invalid email").max(100, "Max 100 characters"),
+          contactName: Yup.string().max(100, "Max 100 characters").required("Contact name is required"),
+          contactMobile: Yup.string().max(15, "Max 15 digits").required("Contact mobile is required"),
+          contactEmail: Yup.string().email("Invalid email").max(100, "Max 100 characters"),
+          state: Yup.string().max(50, "Max 50 characters").required("State is required"),
+          city: Yup.string().max(50, "Max 50 characters").required("City is required"),
+          locality: Yup.string().max(100, "Max 100 characters"),
+          pincode: Yup.string().max(10, "Max 10 characters"),
+          address: Yup.string().max(200, "Max 200 characters"),
+          pan: Yup.string().max(10, "Max 10 characters"),
+          gst: Yup.string().max(15, "Max 15 characters"),
+          designation: Yup.string().max(50, "Max 50 characters"),
+          aboutCompany: Yup.string().max(200, "Max 200 characters"),
+          aboutContact: Yup.string().max(200, "Max 200 characters"),
+          contactGender: Yup.string().required("Gender is required"),
+        })}
         validateOnChange
         validateOnBlur
-        onSubmit={(values) => {
-          showCustomToast({ type: "success", message: "Company Added Successfully" });
-          // handle submit
+        onSubmit={async (values, { setSubmitting, resetForm, setErrors }) => {
+          const CompanyID = localStorage.getItem("CompanyID");
+          const loginId = localStorage.getItem("loginId");
 
-          console.log(values);
+          const payload = {
+            ...values,
+            CompanyID,
+            loginId,
+          };
+
+          try {
+            const response = await axios.post(
+              `${import.meta.env.VITE_BACKEND_URL}/api/client/saveCompany`,
+              payload
+            );
+            if (response.data.success) {
+              showCustomToast({ type: "success", message: "Company Added Successfully" });
+              resetForm();
+              console.log("API response:", response.data);
+            } else {
+              // Show error from API response
+              showCustomToast({ type: "error", message: response.data.message || "Failed to add company" });
+              // Optionally, set form errors for specific fields if API provides them
+              if (response.data.errors) {
+                setErrors(response.data.errors);
+              }
+            }
+          } catch (error) {
+            // Handle network or unexpected errors
+            showCustomToast({ type: "error", message: error.response?.data?.message || "Failed to add company" });
+            if (error.response?.data?.errors) {
+              setErrors(error.response.data.errors);
+            }
+            console.error("API error:", error);
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         {({ errors, touched, setFieldValue, values }) => (
@@ -194,69 +259,90 @@ export default function AddCompany() {
             <section className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-medium mb-4">Address Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">State</label>
-                  <FastField name="state">
-                    {({ field, form }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={(value) => {
-                          form.setFieldValue("state", value);
-                          setSelectedStateId(value);
-                          form.setFieldValue("city", ""); // Reset city when state changes
-                        }}
-                      >
-                        <SelectTrigger className="w-full border rounded px-2 py-2">
-                          <SelectValue placeholder="Select State" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {states.length > 0 ? (
-                            states.map((state) => (
-                              <SelectItem key={state.StateId} value={state.StateId.toString()}>
-                                {state.StateName}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="loading" disabled>
-                              Loading states...
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </FastField>
-                  <ErrorMessage
-                    name="state"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-                <div>
+           
+<div>
+  <label className="block text-sm font-medium mb-1">State</label>
+  {states.length === 0 ? (
+    <div className="flex items-center gap-2 text-gray-500 text-sm py-2">
+      <span className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full"></span>
+      Loading states...
+    </div>
+  ) : (
+    <FastField name="state">
+      {({ field, form }) => (
+        <Select
+          value={field.value}
+          onValueChange={(value) => {
+            form.setFieldValue("state", value);
+            setSelectedStateId(value);
+            form.setFieldValue("city", "");
+          }}
+        >
+          <SelectTrigger className="w-full border rounded px-2 py-2">
+            <SelectValue placeholder="Select State" />
+          </SelectTrigger>
+          <SelectContent>
+            {states.map((state) => (
+              <SelectItem key={state.StateId} value={state.StateId.toString()}>
+                {state.StateName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </FastField>
+  )}
+  <ErrorMessage
+    name="state"
+    component="div"
+    className="text-red-500 text-xs mt-1"
+  />
+</div>
+
+                
+                 <div>
                   <label className="block text-sm font-medium mb-1">City</label>
-                  <FastField name="city">
-                    {({ field, form }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={(value) => {
-                          form.setFieldValue("city", value);
-                          console.log("Selected StateId:", selectedStateId);
-                          console.log("Selected CityId:", value);
-                        }}
-                        disabled={!selectedStateId}
-                      >
-                        <SelectTrigger className="w-full border rounded px-2 py-2">
-                          <SelectValue placeholder="Select City" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cities.map((city) => (
-                            <SelectItem key={city.CityId} value={city.CityId.toString()}>
-                              {city.CityName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </FastField>
+                  {!selectedStateId ? (
+                    <Select disabled>
+                      <SelectTrigger className="w-full border rounded px-2 py-2 bg-gray-100 cursor-not-allowed">
+                        <SelectValue placeholder="Select state first" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* Do NOT render SelectItem with value="" */}
+                      </SelectContent>
+                    </Select>
+                  ) : cities.length === 0 ? (
+                    <Select disabled>
+                      <SelectTrigger className="w-full border rounded px-2 py-2 bg-gray-100 cursor-not-allowed">
+                        <SelectValue placeholder="Loading cities..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* Do NOT render SelectItem with value="" */}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <FastField name="city">
+                      {({ field, form }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            form.setFieldValue("city", value);
+                          }}
+                        >
+                          <SelectTrigger className="w-full border rounded px-2 py-2">
+                            <SelectValue placeholder="Select City" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cities.map((city) => (
+                              <SelectItem key={city.CityId} value={city.CityId.toString()}>
+                                {city.CityName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </FastField>
+                  )}
                   <ErrorMessage
                     name="city"
                     component="div"
@@ -337,85 +423,112 @@ export default function AddCompany() {
             </section>
 
             {/* Contact Details */}
-            <section className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-medium mb-4">Contact Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <FastField name="contactName">
-                    {({ field }) => (
-                      <Input {...field} placeholder="Contact Name" />
-                    )}
-                  </FastField>
-                  <ErrorMessage
-                    name="contactName"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Mobile No <span className="text-red-500">*</span>
-                  </label>
-                  <FastField name="contactMobile">
-                    {({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="12 digits Mobile Number"
-                        maxLength={12}
-                        type="tel"
-                        pattern="[0-9]*"
-                        onInput={e => e.target.value = e.target.value.replace(/[^0-9]/g, '')}
-                      />
-                    )}
-                  </FastField>
-                  <ErrorMessage
-                    name="contactMobile"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <FastField name="contactEmail">
-                    {({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="Contact Email"
-                        type="email"
-                        maxLength={100}
-                        pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                      />
-                    )}
-                  </FastField>
-                  <ErrorMessage
-                    name="contactEmail"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Designation</label>
-                  <FastField name="designation">
-                    {({ field }) => (
-                      <Input {...field} placeholder="Designation" maxLength={50} />
-                    )}
-                  </FastField>
-                </div>
-                <div className="md:col-span-4">
-                  <label className="block text-sm font-medium mb-1">
-                    About Contact
-                  </label>
-                  <FastField name="aboutContact">
-                    {({ field }) => (
-                      <Input {...field} placeholder="About Contact" maxLength={200} />
-                    )}
-                  </FastField>
-                </div>
-              </div>
-            </section>
+        
+<section className="bg-white rounded-lg shadow-sm p-6">
+  <h3 className="text-lg font-medium mb-4">Contact Details</h3>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Name <span className="text-red-500">*</span>
+      </label>
+      <FastField name="contactName">
+        {({ field }) => (
+          <Input {...field} placeholder="Contact Name" />
+        )}
+      </FastField>
+      <ErrorMessage
+        name="contactName"
+        component="div"
+        className="text-red-500 text-xs mt-1"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        Mobile No <span className="text-red-500">*</span>
+      </label>
+      <FastField name="contactMobile">
+        {({ field }) => (
+          <Input
+            {...field}
+            placeholder="12 digits Mobile Number"
+            maxLength={12}
+            type="tel"
+            pattern="[0-9]*"
+            onInput={e => e.target.value = e.target.value.replace(/[^0-9]/g, '')}
+          />
+        )}
+      </FastField>
+      <ErrorMessage
+        name="contactMobile"
+        component="div"
+        className="text-red-500 text-xs mt-1"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Email</label>
+      <FastField name="contactEmail">
+        {({ field }) => (
+          <Input
+            {...field}
+            placeholder="Contact Email"
+            type="email"
+            maxLength={100}
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+          />
+        )}
+      </FastField>
+      <ErrorMessage
+        name="contactEmail"
+        component="div"
+        className="text-red-500 text-xs mt-1"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Designation</label>
+      <FastField name="designation">
+        {({ field }) => (
+          <Input {...field} placeholder="Designation" maxLength={50} />
+        )}
+      </FastField>
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Gender</label>
+      <FastField name="contactGender">
+        {({ field }) => (
+          <Select
+            value={field.value}
+            onValueChange={(value) => field.onChange({ target: { name: "contactGender", value } })}
+          >
+            <SelectTrigger className="w-full border rounded px-2 py-2">
+              <SelectValue placeholder="Select Gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Male">Male</SelectItem>
+              <SelectItem value="Female">Female</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      </FastField>
+      <ErrorMessage
+        name="contactGender"
+        component="div"
+        className="text-red-500 text-xs mt-1"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        About Contact
+      </label>
+      <FastField name="aboutContact">
+        {({ field }) => (
+          <Input {...field} placeholder="About Contact" maxLength={200} />
+        )}
+      </FastField>
+    </div>
+  </div>
+</section>
+ 
 
             <div className="flex justify-end">
               <Button type="submit">Submit</Button>
